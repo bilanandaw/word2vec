@@ -15,6 +15,7 @@ import codecs
 from nltk.corpus import wordnet
 from scipy.stats import pearsonr
 from numpy.linalg import norm
+from nltk.wsd import lesk
 
 # Proses pembersihan corpus
 
@@ -180,10 +181,14 @@ def simWord(wordA,wordB,modelName):
     rank = getModel(modelName).similarity(wordA,wordB)
     return rank
 
+def word_sense(sentence,targetWord):
+    sentence = sentence.split()
+    return lesk(sentence, targetWord), lesk(sentence, targetWord).definition()
+
 # plot_region(x_bounds=(-40.0, -38), y_bounds=(0, 3)) ## -> Untuk menampilkan pemetaan kata pada range tertentu
 # showBigPicture('thronesModel.csv') ## -> Untuk menampilkan pemetaan kata
 # build_model() ## -> Untuk membuat Model Baru
-compareWords('potter2vec(9win).w2v','hasilPotter(9win).csv') ## -> Untuk menampilkan perbandingan 2 set kata dengan gold standard dan nilai-nilai yang lain
+# compareWords('potter2vec(9win).w2v','hasilPotter(9win).csv') ## -> Untuk menampilkan perbandingan 2 set kata dengan gold standard dan nilai-nilai yang lain
 # reduceDimensionality('brown2vec.w2v','model.csv') ## -> Mereduksi dimensi data jadi matriks berdimensi n*2
 # print(mostSimWord('know','brown2vec.w2v')) ## -> Untuk menampilkan 10 kata paling mirim dengan kata yang dicari
 # print(simWord('know',,'brown2vec.w2v')) ## -> Untuk menampilkan tingkat kemiripan kata satu dengan lainnya
@@ -202,3 +207,4 @@ compareWords('potter2vec(9win).w2v','hasilPotter(9win).csv') ## -> Untuk menampi
 
 ## untuk meemanggil metode hapus tanda pagar di awal
 
+print(word_sense('I want to save some money in the bank','bank'))
