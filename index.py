@@ -28,42 +28,42 @@ def sentenceToWordlist(raw):
 # vocab 21 ribu kata, proses ini cukup memakan waktu bisa mencapai setengah jam
 
 def build_model():
-    # raw_corpus = u' '.join(brown.words())
-	raw_corpus = u""
-	with codecs.open("harryPotterCorpus.txt", "r", "utf-8") as book_file:
-		raw_corpus = book_file.read()
-		
-	tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
-	raw_sentences = tokenizer.tokenize(raw_corpus.casefold())
+	# raw_corpus = u""
+	# with codecs.open("harryPotterCorpus.txt", "r", "utf-8") as book_file:
+	# 	raw_corpus = book_file.read()
+    raw_corpus = u' '.join(brown.words())
+        
+    tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
+    raw_sentences = tokenizer.tokenize(raw_corpus.casefold())
 
-	sentences = []
-	for raw_sentence in raw_sentences:
-		if len(raw_sentence) > 0:
-			sentences.append(sentenceToWordlist(raw_sentence))
-    
-	num_features = 300
-	min_word_count = 3
-	num_workers = multiprocessing.cpu_count()
-	context_size = 9
-	downsampling = 1e-3
-	seed = 1
+    sentences = []
+    for raw_sentence in raw_sentences:
+        if len(raw_sentence) > 0:
+            sentences.append(sentenceToWordlist(raw_sentence))
 
-	brown2vec = w2v.Word2Vec(
-		sg=True,
-		seed=seed,
-		workers=num_workers,
-		size=num_features,
-		min_count=min_word_count,
-		window=context_size,
-		sample=downsampling
-	)
+    num_features = 300
+    min_word_count = 3
+    num_workers = multiprocessing.cpu_count()
+    context_size = 9
+    downsampling = 1e-3
+    seed = 1
 
-	brown2vec.build_vocab(sentences)
+    brown2vec = w2v.Word2Vec(
+        sg=True,
+        seed=seed,
+        workers=num_workers,
+        size=num_features,
+        min_count=min_word_count,
+        window=context_size,
+        sample=downsampling
+    )
 
-	print("Word2Vec vocabulary length:", len(brown2vec.wv.vocab))
+    brown2vec.build_vocab(sentences)
 
-	brown2vec.train(sentences,total_examples=brown2vec.corpus_count, epochs=brown2vec.epochs)
-	brown2vec.save("potter2vec(9win).w2v")
+    print("Word2Vec vocabulary length:", len(brown2vec.wv.vocab))
+
+    brown2vec.train(sentences,total_examples=brown2vec.corpus_count, epochs=brown2vec.epochs)
+    brown2vec.save("potter2vec(9win).w2v")
 
 
 # 2 method get dibawah adalah method yang sangat memudahkan jika ingin melakukan analisa terhadap
@@ -185,6 +185,39 @@ def word_sense(sentence,targetWord):
     sentence = sentence.split()
     return lesk(sentence, targetWord), lesk(sentence, targetWord).definition()
 
+def calculateWordSense(targetWord):
+    raw_corpus = u' '.join(brown.words())
+        
+    tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
+    raw_sentences = tokenizer.tokenize(raw_corpus.casefold())
+
+    sentences = []
+    for raw_sentence in raw_sentences:
+        if len(raw_sentence) > 0:
+            sentences.append(sentenceToWordlist(raw_sentence))
+
+    targetSentence = []
+    targetWordKind = []
+    targetWordDefs = [] 
+
+    for sentence in sentences :
+        if targetWord in sentence:
+            targetSentence.append(' '.join(sentence))
+            targetWordKind.append(lesk(sentence, targetWord))
+            targetWordDefs.append(lesk(sentence, targetWord).definition())
+    
+    data = pd.DataFrame(
+        {
+            "Kalimat" : targetSentence,
+            "Kata Target" : targetWordKind,
+            "Definisi Kata" : targetWordDefs
+        }
+    )
+    
+    targetWord += " Word Sense Disambugation.csv" 
+
+    data.to_csv(targetWord, sep=";")
+
 # plot_region(x_bounds=(-40.0, -38), y_bounds=(0, 3)) ## -> Untuk menampilkan pemetaan kata pada range tertentu
 # showBigPicture('thronesModel.csv') ## -> Untuk menampilkan pemetaan kata
 # build_model() ## -> Untuk membuat Model Baru
@@ -207,4 +240,6 @@ def word_sense(sentence,targetWord):
 
 ## untuk meemanggil metode hapus tanda pagar di awal
 
-print(word_sense('I want to save some money in the bank','bank'))
+# print(word_sense('I want to play','play'))
+
+calculateWordSense("car")
