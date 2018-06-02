@@ -218,6 +218,47 @@ def calculateWordSense(targetWord):
 
     data.to_csv(targetWord, sep=";")
 
+def calculateAllWordSense():
+    simlex = pd.read_csv('simlex.csv')
+    raw_corpus = u' '.join(brown.words())
+        
+    tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
+    raw_sentences = tokenizer.tokenize(raw_corpus.casefold())
+
+    sentences = []
+    for raw_sentence in raw_sentences:
+        if len(raw_sentence) > 0:
+            sentences.append(sentenceToWordlist(raw_sentence))
+
+    targetSentence = []
+    targetWordKind = []
+    targetWordDefs = [] 
+
+    for i, value in simlex.iterrows() :
+        for sentence in sentences :
+            if value.x in sentence:
+                targetSentence.append(' '.join(sentence))
+                targetWordKind.append(lesk(sentence, value.x))
+                targetWordDefs.append(lesk(sentence, value.x).definition())
+                
+        for sentence in sentences :
+            if value.y in sentence:
+                targetSentence.append(' '.join(sentence))
+                targetWordKind.append(lesk(sentence, value.y))
+                targetWordDefs.append(lesk(sentence, value.y).definition())
+        
+        print("Finish : "+value.x+" and "+value.y)
+    
+    data = pd.DataFrame(
+        {
+            "Kalimat" : targetSentence,
+            "Kata Target" : targetWordKind,
+            "Definisi Kata" : targetWordDefs
+        }
+    )
+
+    data.to_csv(" Total.csv", sep=";")
+
 # plot_region(x_bounds=(-40.0, -38), y_bounds=(0, 3)) ## -> Untuk menampilkan pemetaan kata pada range tertentu
 # showBigPicture('thronesModel.csv') ## -> Untuk menampilkan pemetaan kata
 # build_model() ## -> Untuk membuat Model Baru
@@ -242,4 +283,5 @@ def calculateWordSense(targetWord):
 
 # print(word_sense('I want to play','play'))
 
-calculateWordSense("car")
+# calculateWordSense("car")
+calculateAllWordSense()
