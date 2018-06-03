@@ -16,6 +16,7 @@ from nltk.corpus import wordnet
 from scipy.stats import pearsonr
 from numpy.linalg import norm
 from nltk.wsd import lesk
+from collections import Counter
 
 # Proses pembersihan corpus
 
@@ -259,6 +260,54 @@ def calculateAllWordSense():
 
     data.to_csv(" Total.csv", sep=";")
 
+def countAllWordSense():
+    simlex = pd.read_csv('simlex.csv')
+    raw_corpus = u' '.join(brown.words())
+        
+    tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
+    raw_sentences = tokenizer.tokenize(raw_corpus.casefold())
+
+    sentences = []
+    for raw_sentence in raw_sentences:
+        if len(raw_sentence) > 0:
+            sentences.append(sentenceToWordlist(raw_sentence))
+
+    targetWordKind = [] 
+    wordX = []
+    wordXsense = []
+    wordY = []
+    wordYsense = []
+
+    for i, value in simlex.iterrows() :
+        targetWordKind = []
+        for sentence in sentences :
+            if value.x in sentence:
+                targetWordKind.append(lesk(sentence, value.x))
+        
+        wordX.append(value.x)
+        wordXsense.append(len(Counter(targetWordKind)))
+                
+        targetWordKind = []
+        for sentence in sentences :
+            if value.y in sentence:
+                targetWordKind.append(lesk(sentence, value.y))
+        
+        wordY.append(value.y)
+        wordYsense.append(len(Counter(targetWordKind)))
+
+        print("Finish : "+value.x+" and "+value.y)
+    
+    data = pd.DataFrame(
+        {
+            "Word X" : wordX,
+            "Word X Sense" : wordXsense,
+            "Word Y" : wordY,
+            "Word Y Sense" : wordYsense
+        }
+    )
+
+    data.to_csv(" Total.csv", sep=";", index = False)
+
 # plot_region(x_bounds=(-40.0, -38), y_bounds=(0, 3)) ## -> Untuk menampilkan pemetaan kata pada range tertentu
 # showBigPicture('thronesModel.csv') ## -> Untuk menampilkan pemetaan kata
 # build_model() ## -> Untuk membuat Model Baru
@@ -284,4 +333,4 @@ def calculateAllWordSense():
 # print(word_sense('I want to play','play'))
 
 # calculateWordSense("car")
-calculateAllWordSense()
+countAllWordSense()
