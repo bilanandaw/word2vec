@@ -32,7 +32,7 @@ def build_model():
 	# raw_corpus = u""
 	# with codecs.open("harryPotterCorpus.txt", "r", "utf-8") as book_file:
 	# 	raw_corpus = book_file.read()
-    raw_corpus = u' '.join(brown.words())
+    raw_corpus = u' '.join(brown.words()) #menggabung kumpulan artikel brown.words()
         
     tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
     raw_sentences = tokenizer.tokenize(raw_corpus.casefold())
@@ -42,8 +42,8 @@ def build_model():
         if len(raw_sentence) > 0:
             sentences.append(sentenceToWordlist(raw_sentence))
 
-    num_features = 300
-    min_word_count = 3
+    num_features = 300 #dimensi matrix per kata
+    min_word_count = 3 #kata yg dihitung berdasarkan windows size
     num_workers = multiprocessing.cpu_count()
     context_size = 9
     downsampling = 1e-3
