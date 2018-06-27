@@ -50,7 +50,7 @@ def build_model():
     seed = 1
 
     brown2vec = w2v.Word2Vec(
-        sg=True,
+        sg=True, #jika true skip gram, jika false cbow
         seed=seed,
         workers=num_workers,
         size=num_features,
@@ -77,7 +77,7 @@ def getMatrix(matrixName):
 def getModel(modelName):
     return w2v.Word2Vec.load(modelName)
 
-# Proses yang paling banyak memakan waktu kurang lebih 3 jam, hindari memanggil proses ini.
+# Proses yang paling banyak memakan waktu
 # Proses ini digunakan untuk memperkecil dimensi ruang vektor yang berdimensi banyak menjadi 2
 # dimensi agar bisa lebih mudah direpresentasikan dan diukur
 def reduceDimensionality(modelName,saveAs):  
