@@ -45,7 +45,7 @@ def build_model():
     num_features = 300 #dimensi matrix per kata
     min_word_count = 3 #kata yg dihitung berdasarkan windows size
     num_workers = multiprocessing.cpu_count()
-    context_size = 9
+    context_size = 9 #menentukan pasangan kata
     downsampling = 1e-3 #menentukan banyak jumlah subsampling, jika nilai kata kurang dari subsampling maka kata tsb diabaikan
     seed = 1
 
