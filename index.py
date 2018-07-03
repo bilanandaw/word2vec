@@ -46,7 +46,7 @@ def build_model():
     min_word_count = 3 #kata yg dihitung berdasarkan windows size
     num_workers = multiprocessing.cpu_count()
     context_size = 9
-    downsampling = 1e-3 #menentukan banyak jumlah subsampling 
+    downsampling = 1e-3 #menentukan banyak jumlah subsampling, jika nilai kata kurang dari subsampling maka kata tsb diabaikan
     seed = 1
 
     brown2vec = w2v.Word2Vec(
