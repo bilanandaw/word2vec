@@ -43,7 +43,7 @@ def build_model():
             sentences.append(sentenceToWordlist(raw_sentence))
 
     num_features = 300 #dimensi matrix per kata
-    min_word_count = 3 #kata yg dihitung berdasarkan windows size
+    min_word_count = 3 #minimun kemunculan kata
     num_workers = multiprocessing.cpu_count()
     context_size = 9 #menentukan pasangan kata
     downsampling = 1e-3 #menentukan banyak jumlah subsampling, jika nilai kata kurang dari subsampling maka kata tsb diabaikan
