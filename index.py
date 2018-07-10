@@ -140,10 +140,6 @@ def getVector(matrixName,word):
 def calculatePearson(x,y):
     return pearsonr(x,y)
     
-def calculateEuclidDist(x,y):
-    return norm(x-y)
-
-
 def getRelation(matrixName):
     x  = pd.read_csv(matrixName, sep=';', lineterminator='\r')['simlex']
     w2v = pd.read_csv(matrixName, sep=';', lineterminator='\r')['w2v']
