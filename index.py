@@ -194,6 +194,4 @@ def simWord(wordA,wordB,modelName):
 # reduceDimensionality('brown2vec(5win).w2v','model(5win).csv')
 
 # model = getModel('potter2vec.w2v')
-# print(model.wv.evaluate_word_pairs('simlex.tsv'))
-# print(model.wv.evaluate_word_pairs('353.tsv'))
 
