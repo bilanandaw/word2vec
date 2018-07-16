@@ -99,12 +99,6 @@ def getMatrix(matrixName):
 def getModel(modelName):
     return w2v.Word2Vec.load(modelName)
 
-def getVector(matrixName,word):
-    matrix = getMatrix(matrixName)
-    for _,val in matrix.iterrows() :
-        if(val.word == word):
-            return np.array([val.x,val.y])
-    return np.zeros(shape=2)
 
 def calculatePearson(x,y):
     return pearsonr(x,y)
