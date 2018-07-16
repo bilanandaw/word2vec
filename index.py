@@ -66,6 +66,28 @@ def build_model():
     brown2vec.train(sentences,total_examples=brown2vec.corpus_count, epochs=brown2vec.epochs)
     brown2vec.save("potter2vec(9win).w2v")
 
+def compareWords(modelName,saveAs):
+    simlex = pd.read_csv('simlex.csv')
+    similarity = np.zeros(shape=(len(simlex)))
+    simlex_norm = (simlex['val'] - min(simlex['val']))/(max(simlex['val'])-min(simlex['val']))
+
+    for i, value in simlex.iterrows() :
+        try:
+            similarity[i] = getModel(modelName).similarity(value.x, value.y)
+        except KeyError:
+            pass
+
+    data = pd.DataFrame(
+        {
+            "word1" : np.array(simlex['x']),
+            "word2" : np.array(simlex['y']),
+            "simlex" : np.array(simlex['val']),
+            "simlex_norm" : np.array(simlex_norm),
+            "w2v" : similarity
+        }
+    )
+
+    data.to_csv(saveAs,sep=";")
 
 # 2 method get dibawah adalah method yang sangat memudahkan jika ingin melakukan analisa terhadap
 # data yang telah dilatih karena tidak perlu melatih lagi data yang cukup memakan waktu tapi cukup 
@@ -76,6 +98,23 @@ def getMatrix(matrixName):
 
 def getModel(modelName):
     return w2v.Word2Vec.load(modelName)
+
+def getVector(matrixName,word):
+    matrix = getMatrix(matrixName)
+    for _,val in matrix.iterrows() :
+        if(val.word == word):
+            return np.array([val.x,val.y])
+    return np.zeros(shape=2)
+
+def calculatePearson(x,y):
+    return pearsonr(x,y)
+    
+def getRelation(matrixName):
+    x  = pd.read_csv(matrixName, sep=';', lineterminator='\r')['simlex']
+    w2v = pd.read_csv(matrixName, sep=';', lineterminator='\r')['w2v']
+    simlex = (x - min(x))/(max(x)-min(x))
+    # print(simlex)
+    print(calculatePearson(simlex,w2v))
 
 # Proses yang paling banyak memakan waktu
 # Proses ini digunakan untuk memperkecil dimensi ruang vektor yang berdimensi banyak menjadi 2
@@ -129,47 +168,6 @@ def plot_region(x_bounds, y_bounds, matrixName):
         ax.text(point.x + 0.005, point.y + 0.005, point.word, fontsize=11)
     plt.show()
 
-
-def getVector(matrixName,word):
-    matrix = getMatrix(matrixName)
-    for _,val in matrix.iterrows() :
-        if(val.word == word):
-            return np.array([val.x,val.y])
-    return np.zeros(shape=2)
-
-def calculatePearson(x,y):
-    return pearsonr(x,y)
-    
-def getRelation(matrixName):
-    x  = pd.read_csv(matrixName, sep=';', lineterminator='\r')['simlex']
-    w2v = pd.read_csv(matrixName, sep=';', lineterminator='\r')['w2v']
-    simlex = (x - min(x))/(max(x)-min(x))
-    # print(simlex)
-    print(calculatePearson(simlex,w2v))
-
-def compareWords(modelName,saveAs):
-    simlex = pd.read_csv('simlex.csv')
-    similarity = np.zeros(shape=(len(simlex)))
-    simlex_norm = (simlex['val'] - min(simlex['val']))/(max(simlex['val'])-min(simlex['val']))
-
-    for i, value in simlex.iterrows() :
-        try:
-            similarity[i] = getModel(modelName).similarity(value.x, value.y)
-        except KeyError:
-            pass
-
-    data = pd.DataFrame(
-        {
-            "word1" : np.array(simlex['x']),
-            "word2" : np.array(simlex['y']),
-            "simlex" : np.array(simlex['val']),
-            "simlex_norm" : np.array(simlex_norm),
-            "w2v" : similarity
-        }
-    )
-
-    data.to_csv(saveAs,sep=";")
-
 def mostSimWord(word,modelName):
     words = getModel(modelName).most_similar(word)
     return words
@@ -178,131 +176,6 @@ def simWord(wordA,wordB,modelName):
     rank = getModel(modelName).similarity(wordA,wordB)
     return rank
 
-def word_sense(sentence,targetWord):
-    sentence = sentence.split()
-    return lesk(sentence, targetWord), lesk(sentence, targetWord).definition()
-
-def calculateWordSense(targetWord):
-    raw_corpus = u' '.join(brown.words())
-        
-    tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
-    raw_sentences = tokenizer.tokenize(raw_corpus.casefold())
-
-    sentences = []
-    for raw_sentence in raw_sentences:
-        if len(raw_sentence) > 0:
-            sentences.append(sentenceToWordlist(raw_sentence))
-
-    targetSentence = []
-    targetWordKind = []
-    targetWordDefs = [] 
-
-    for sentence in sentences :
-        if targetWord in sentence:
-            targetSentence.append(' '.join(sentence))
-            targetWordKind.append(lesk(sentence, targetWord))
-            targetWordDefs.append(lesk(sentence, targetWord).definition())
-    
-    data = pd.DataFrame(
-        {
-            "Kalimat" : targetSentence,
-            "Kata Target" : targetWordKind,
-            "Definisi Kata" : targetWordDefs
-        }
-    )
-    
-    targetWord += " Word Sense Disambugation.csv" 
-
-    data.to_csv(targetWord, sep=";")
-
-def calculateAllWordSense():
-    simlex = pd.read_csv('simlex.csv')
-    raw_corpus = u' '.join(brown.words())
-        
-    tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
-    raw_sentences = tokenizer.tokenize(raw_corpus.casefold())
-
-    sentences = []
-    for raw_sentence in raw_sentences:
-        if len(raw_sentence) > 0:
-            sentences.append(sentenceToWordlist(raw_sentence))
-
-    targetSentence = []
-    targetWordKind = []
-    targetWordDefs = [] 
-
-    for i, value in simlex.iterrows() :
-        for sentence in sentences :
-            if value.x in sentence:
-                targetSentence.append(' '.join(sentence))
-                targetWordKind.append(lesk(sentence, value.x))
-                targetWordDefs.append(lesk(sentence, value.x).definition())
-                
-        for sentence in sentences :
-            if value.y in sentence:
-                targetSentence.append(' '.join(sentence))
-                targetWordKind.append(lesk(sentence, value.y))
-                targetWordDefs.append(lesk(sentence, value.y).definition())
-        
-        print("Finish : "+value.x+" and "+value.y)
-    
-    data = pd.DataFrame(
-        {
-            "Kalimat" : targetSentence,
-            "Kata Target" : targetWordKind,
-            "Definisi Kata" : targetWordDefs
-        }
-    )
-
-    data.to_csv(" Total.csv", sep=";")
-
-def countAllWordSense():
-    simlex = pd.read_csv('simlex.csv')
-    raw_corpus = u' '.join(brown.words())
-        
-    tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
-    raw_sentences = tokenizer.tokenize(raw_corpus.casefold())
-
-    sentences = []
-    for raw_sentence in raw_sentences:
-        if len(raw_sentence) > 0:
-            sentences.append(sentenceToWordlist(raw_sentence))
-
-    targetWordKind = [] 
-    wordX = []
-    wordXsense = []
-    wordY = []
-    wordYsense = []
-
-    for i, value in simlex.iterrows() :
-        targetWordKind = []
-        for sentence in sentences :
-            if value.x in sentence:
-                targetWordKind.append(lesk(sentence, value.x))
-        
-        wordX.append(value.x)
-        wordXsense.append(len(Counter(targetWordKind)))
-                
-        targetWordKind = []
-        for sentence in sentences :
-            if value.y in sentence:
-                targetWordKind.append(lesk(sentence, value.y))
-        
-        wordY.append(value.y)
-        wordYsense.append(len(Counter(targetWordKind)))
-
-        print("Finish : "+value.x+" and "+value.y)
-    
-    data = pd.DataFrame(
-        {
-            "Word X" : wordX,
-            "Word X Sense" : wordXsense,
-            "Word Y" : wordY,
-            "Word Y Sense" : wordYsense
-        }
-    )
-
-    data.to_csv(" Total.csv", sep=";", index = False)
 
 # plot_region(x_bounds=(-40.0, -38), y_bounds=(0, 3)) ## -> Untuk menampilkan pemetaan kata pada range tertentu
 # showBigPicture('thronesModel.csv') ## -> Untuk menampilkan pemetaan kata
@@ -324,9 +197,3 @@ def countAllWordSense():
 # print(model.wv.evaluate_word_pairs('simlex.tsv'))
 # print(model.wv.evaluate_word_pairs('353.tsv'))
 
-## untuk meemanggil metode hapus tanda pagar di awal
-
-# print(word_sense('I want to play','play'))
-
-# calculateWordSense("car")
-countAllWordSense()
